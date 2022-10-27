@@ -6,8 +6,10 @@
 #define COL 9
 #define BLUE 81
 #define YELLO 218
+
 int fromx, fromy;
 int tox, toy;
+int inputx, inputy, outputx, outputy;
 int count=0;
 char plate[ROW][COL];
 void ini();
@@ -176,29 +178,31 @@ void movecheck(){
     else{
         printf("輸入目標X座標與Y座標\n");
         scanf("%d%d",&tox,&toy);
+        outputx=9-tox;
+        outputy=toy-1;
         if(plate[inputy][inputx]=='x' || plate[inputy][inputx]=='X'){
-            xiang(count);
+            xiang();
         }
         else if(plate[inputy][inputx]=='g' || plate[inputy][inputx]=='G'){
-            guei(count);
+            guei();
         }
         else if(plate[inputy][inputx]=='y' ||plate[inputy][inputx]=='Y'){
-            yin(count);
+            yin();
         }
         else if(plate[inputy][inputx]=='k' ||plate[inputy][inputx]=='K'){
-            jin(count);
+            jin();
         }
         else if(plate[inputy][inputx]=='w' || plate[inputy][inputx]=='W'){
-            wang(count);
+            wang();
         }
-        // else if(plate[inputy][inputx]=='f' || plate[inputy][inputx]=='F'){
-        //     fei(count);
-        // }
+        else if(plate[inputy][inputx]=='f' || plate[inputy][inputx]=='F'){
+            fei();
+        }
         else if(plate[inputy][inputx]=='j' || plate[inputy][inputx]=='J'){
-            jiao(count);
+            jiao();
         }
          else if(plate[inputy][inputx]=='b' || plate[inputy][inputx]=='B'){
-             bu(count);
+             bu();
         }
     }
 
@@ -207,10 +211,10 @@ void movecheck(){
 int xiang(){
    
     if(count%2==0){
-        if(fromx==tox && fromy>toy && plate[toy-1][9-toy]==' '){
+        if(inputx==outputx && inputy>outputy && plate[outputy][outputx]==' '){
            int k=0;
-           for(int i=fromy-1; i>=toy; i--){
-                if(plate[toy-1][9-tox]!=' '){
+           for(int i=inputy-1; i>=outputy; i--){
+                if(plate[i][outputx]!=' '){
                     k++;
                 }
             }
@@ -221,7 +225,7 @@ int xiang(){
                 cannotmove();
             }
         }
-        else if(plate[toy-1][9-tox]>='a' && plate[toy-1][9-tox]<='z'){
+        else if(plate[outputy][outputx]>='a' && plate[outputy][outputx]<='z'){
 
         }   
         else{
@@ -229,10 +233,10 @@ int xiang(){
         }
     }
     else{
-        if(fromx==tox && fromy<toy && plate[toy-1][9-tox]==' '){
+        if(inputx==outputx && inputy<outputy && plate[outputy][outputx]==' '){
             int k=0;
-            for(int i=fromy+1; i<=toy; i++){
-                if(plate[toy-1][9-tox]!=' '){
+            for(int i=inputy+1; i<=outputy; i++){
+                if(plate[i][outputx]!=' '){
                     k++;
                 }
             }
@@ -243,7 +247,7 @@ int xiang(){
                 cannotmove();
             }
         }
-        else if(plate[toy-1][9-tox]>='A' && plate[toy-1][9-tox]<='Z'){
+        else if(plate[outputy][outputx]>='A' && plate[outputy][outputx]<='Z'){
 
         }
         else{
@@ -255,10 +259,10 @@ int xiang(){
 int guei(){
     
     if(count%2==0){
-        if((fromx-1==tox || fromx+1==tox) && fromy-2==toy && plate[toy-1][9-tox]==' '){
+        if((inputx-1==outputx || inputx+1==outputx) && inputy-2==outputy && plate[outputy][outputx]==' '){
             canmove();
         }
-        else if(plate[toy-1][9-tox]>='a' && plate[toy-1][9-tox]<='z'){
+        else if(plate[outputy][outputx]>='a' && plate[outputy][outputx]<='z'){
 
 
         }
@@ -268,11 +272,11 @@ int guei(){
         
     }
     else{
-        if((fromx-1==tox || fromx+1==tox) && fromy+2==toy && plate[toy-1][9-tox]==' '){
+        if((inputx-1==outputx || inputx+1==outputx) && inputy+2==outputy && plate[outputy][outputx]==' '){
             canmove();
 
         }
-        else if(plate[toy-1][9-tox]>='A' && plate[toy-1][9-tox]<='Z'){
+        else if(plate[outputy][outputx]>='A' && plate[outputy][outputx]<='Z'){
 
             
         }
@@ -284,9 +288,9 @@ int guei(){
 }
 
 int yin(){
-    if(abs(fromx-tox)<2 && abs(fromy-toy)<2){
+    if(abs(inputx-outputx)<2 && abs(inputy-outputy)<2){
         if(count%2==0){
-            if((fromx-1==tox && fromy==toy) || (fromx+1==tox && fromy==toy) || (fromx==tox && fromy+1==toy)){
+            if((inputx-1==outputx && inputy==outputy) || (inputx+1==outputx && inputy==outputy) || (inputx==outputx && inputy+1==outputy)){
                 cannotmove();
             }
             else{
@@ -294,7 +298,7 @@ int yin(){
             }
         }
         else{
-            if((fromx-1==tox && fromy==toy) || (fromx+1==tox && fromy==toy) || (fromx==tox && fromy-1==toy)){
+            if((inputx-1==outputx && inputy==outputy) || (inputx+1==outputx && inputy==outputy) || (inputx==outputx && inputy-1==outputy)){
                 cannotmove();
             }
             else{
@@ -308,9 +312,9 @@ int yin(){
 }
 
 int jin(){
-    if(abs(fromx-tox)<2 && abs(fromy-toy)<2){
+    if(abs(inputx-outputx)<2 && abs(inputy-outputy)<2){
         if(count%2==0){
-            if((fromx-1==tox && fromy+1==toy) || (fromx+1==tox && fromy+1==toy)){
+            if((inputx-1==outputx && inputy+1==outputy) || (inputx+1==outputx && inputy+1==outputy)){
                 cannotmove();
             }
             else{
@@ -318,7 +322,7 @@ int jin(){
             }
         }
         else{
-            if((fromx-1==tox && fromy-1==toy) || (fromx+1==tox && fromy-1==toy)){
+            if((inputx-1==outputx && inputy-1==outputy) || (inputx+1==outputx && inputy-1==outputy)){
                 cannotmove();
             }
             else{
@@ -332,14 +336,14 @@ int jin(){
 }
 
 int wang(){
-    if(abs(fromx-tox)<2 && abs(fromy-toy)<2){
-        if(plate[toy-1][9-tox]==' '){
+    if(abs(inputx-outputx)<2 && abs(inputy-outputy)<2){
+        if(plate[outputy][outputx]==' '){
             canmove();
         }
-        else if(count%2==0 && plate[toy-1][9-tox]>='a' && plate[toy-1][9-tox]<='z'){
+        else if(count%2==0 && plate[outputy][outputx]>='a' && plate[outputy][outputx]<='z'){
          
         }
-        else if(count%2!=0 && plate[toy-1][9-tox]>='A' && plate[toy-1][9-tox]<='Z'){
+        else if(count%2!=0 && plate[outputy][outputx]>='A' && plate[outputy][outputx]<='Z'){
         
         }
         else{
@@ -351,43 +355,41 @@ int wang(){
     }
 }
 
-// int fei(){
-//     if((fromx==tox || fromy==toy) && plate[toy-1][9-tox]==' '){
-//         int k=0;
-//         for()
-//     }
-
-// }
-
-int jiao(){
-   
-    if(abs(fromx-tox)==abs(fromy-toy) && plate[toy-1][9-tox]==' '){
+int fei(){
+    if((inputx==outputx || inputy==outputy) && plate[outputy][outputx]==' '){
         int k=0;
-        if(fromx-tox>0 && fromy-toy>0){
-            for(int i=fromx-1, j=fromy-1; i>=tox, j>=toy ; i--, j--){
-                if(plate[toy-1][9-tox]!=' '){
+        if(inputx==outputx && inputy>outputy){
+            for(int i=inputy-1; i>outputy; i--){
+                if(plate[i][outputx]!=' '){
                     k++;
+                    printf("%d\n",k);
                 }
             }
         }
-        else if(fromx-tox>0 && fromy-toy<0){
-            for(int i=fromx-1, j=fromy+1 ; i>=tox, j<=toy ; i--, j++){
-                if(plate[toy-1][9-tox]!=' '){
+        else if(inputx==outputx && inputy<outputy){
+            for(int i=inputy+1; i<outputy; i++){
+                if(plate[i][outputx]!=' '){
                     k++;
+                                        printf("%d\n",k);
+
                 }
             }
         }
-        else if(fromx-tox<0 && fromy-toy>0){
-            for(int i=fromx+1, j=fromy-1 ; i<=tox, j>=toy ; i++, j--){
-                if(plate[toy-1][9-tox]!=' '){
+        else if(inputx<outputx && inputy==outputy){
+            for(int i=inputx+1; i<outputx; i++){
+                if(plate[outputy][i]!=' '){
                     k++;
+                                        printf("%d\n",k);
+
                 }
             }
         }
-        else{
-            for(int i=fromx+1, j=fromy+1 ; i<=tox, j<=toy ; i++, j++){
-                if(plate[toy-1][9-tox]!=' '){
+        else if(inputx>outputx && inputy==outputy){
+            for(int i=inputx-1; i>outputx; i--){
+                if(plate[outputy][i]!=' '){
                     k++;
+                                        printf("%d\n",k);
+
                 }
             }
         }
@@ -399,10 +401,62 @@ int jiao(){
             cannotmove();
         }
     }
-    else if(count%2==0 && plate[toy-1][9-tox]>='a' && plate[toy-1][9-tox]<='z'){
+    else if(count%2==0 && plate[outputy][outputx]>='a' && plate[outputy][outputx]<='z' && (inputx==outputx || inputy==outputy)){
          
     }
-    else if(count%2!=0 && plate[toy-1][9-tox]>='A' && plate[toy-1][9-tox]<='Z'){
+    else if(count%2!=0 && plate[outputy][outputx]>='A' && plate[outputy][outputx]<='Z' && (inputx==outputx || inputy==outputy)){
+        
+    }
+    else{
+        cannotmove();
+    }
+
+}
+
+int jiao(){
+   
+    if(abs(inputx-outputx)==abs(inputy-outputy) ){
+        int k=0;
+        if(inputx-outputx>0 && inputy-outputy>0){
+            for(int i=inputx-1, j=inputy-1; i>=outputx, j>=outputy ; i--, j--){
+                if(plate[j][i]!=' '){
+                    k++;
+                }
+            }
+        }
+        else if(inputx-outputx>0 && inputy-outputy<0){
+            for(int i=inputx-1, j=inputy+1 ; i>=outputx, j<=outputy ; i--, j++){
+                if(plate[j][i]!=' '){
+                    k++;
+                }
+            }
+        }
+        else if(inputx-outputx<0 && inputy-outputy>0){
+            for(int i=inputx+1, j=inputy-1 ; i<=outputx, j>=outputy ; i++, j--){
+                if(plate[j][i]!=' '){
+                    k++;
+                }
+            }
+        }
+        else{
+            for(int i=inputx+1, j=inputy+1 ; i<=outputx, j<=outputy ; i++, j++){
+                if(plate[j][i]!=' '){
+                    k++;
+                }
+            }
+        }
+        
+        if(k==0){
+            canmove();
+        }
+        else{
+            cannotmove();
+        }
+    }
+    else if(count%2==0 && plate[outputy][outputx]>='a' && plate[outputy][outputx]<='z'){
+         
+    }
+    else if(count%2!=0 && plate[outputy][outputx]>='A' && plate[outputy][outputx]<='Z'){
         
     }
     else{
@@ -414,11 +468,11 @@ int jiao(){
 int bu(){
     
     if(count%2==0){
-        if(fromx==tox && fromy-1==toy && plate[toy-1][9-tox]==' '){
+        if(inputx==outputx && inputy-1==outputy && plate[outputy][outputx]==' '){
             canmove();
             
         }
-        else if(plate[toy-1][9-tox]>='a' && plate[toy-1][9-tox]<='z'){
+        else if(plate[outputy][outputx]>='a' && plate[outputy][outputx]<='z'){
 
 
         }
@@ -427,11 +481,11 @@ int bu(){
         }
     }
     else{
-        if(fromx==tox && fromy+1==toy && plate[toy-1][9-tox]==' '){
+        if(inputx==outputx && inputy+1==outputy && plate[outputy][outputx]==' '){
             canmove();
 
         }
-        else if(plate[toy-1][9-tox]>='A' && plate[toy-1][9-tox]<='Z'){
+        else if(plate[outputy][outputx]>='A' && plate[outputy][outputx]<='Z'){
 
             
         }
@@ -442,9 +496,9 @@ int bu(){
 }
 
 int canmove(){
-    plate[toy-1][9-tox]=plate[fromy-1][inputx];
-    plate[fromy-1][inputx]=' ';
-    
+    plate[outputy][outputx]=plate[inputy][inputx];
+    plate[inputy][inputx]=' ';
+    count++;
 }
 
 void cannotmove(){
