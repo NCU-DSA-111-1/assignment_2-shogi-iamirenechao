@@ -10,10 +10,13 @@
 int fromx, fromy;
 int tox, toy;
 int inputx, inputy, outputx, outputy;
+char firstinput;
 int count=0;
 char plate[ROW][COL];
+char saveminor[500], savemajor[500];
+int saveminloc=0, savemajloc=0;
 void ini();
-void print();
+void print(char chess);
 void movecheck();
 int xiang();
 int guei();
@@ -23,18 +26,82 @@ int wang();
 int fei();
 int jiao();
 int bu();
-int canmove();
+void canmove();
 void cannotmove();
 void printColour(int color, char* str);
+int eat(char p);
+extern char *optarg;
+extern int optind, opterr, optopt;
+FILE *file;
+int z;
+struct node{
+    int ix, iy, ox, oy;
+    char chessori, chessalt;
+    struct node* next;
+    struct node* prev;
+};
 
-int main(void){
+typedef struct node cun;
+typedef struct node* cunptr;
+cunptr current;
+cunptr start;
+
+int main(int argc, char **argv){
     ini();
-    print();
-    while(1){
-        movecheck();
-        system("clear");
-        print();
+    
+    current= (cunptr) malloc(sizeof(cun));
+    current->prev=NULL;
+    start=current;
+
+    while((z=getopt(argc, argv, "ns:l:"))!=-1){
+        switch(z){
+            case 'n':
+                
+                break;
+
+            case 's':
+                file=fopen(optarg,"w+");
+                if( file==NULL){
+                    printf("File cannot be opened!\n");
+                    return 0;
+                }
+                
+                break;
+
+            case 'l':
+                file=fopen(optarg,"r+");
+                if(file==NULL){
+                    printf("File cannot be opened!");
+                    return 0;
+                }
+                
+                break;
+        }
     }
+    while(1){
+        system("clear");
+        for(int i=0; i<savemajloc; i++){
+            print(savemajor[i]);
+        }
+        printf("\n");
+
+        printf("９８７６５４３２１\n");
+        for(int i=0 ; i<ROW ; i++ ){
+            for( int j=0 ; j<COL ; j++){
+                print(plate[i][j]);
+            }
+            printf("%d",i+1);
+            printf("\n");
+        }
+        for(int i=0; i<=saveminloc; i++){
+            print(saveminor[i]);
+        }
+        printf("\n");
+        movecheck();
+        getchar();
+
+    }
+        
     
     return 0;
 }
@@ -100,11 +167,10 @@ void ini(){
     }
 }
 
-void print(){
-    printf(" 9 8 7 6 5 4 3 2 1\n");
-    for(int i=0 ; i<ROW ; i++ ){
-        for( int j=0 ; j<COL ; j++){
-            switch(plate[i][j]){
+void print(char chess){
+    
+
+            switch(chess){
             case'x':
                 printColour(BLUE,"香");
                 break;
@@ -159,19 +225,67 @@ void print(){
             }
             
 
-        }
-        printf("%d",i+1);
-        printf("\n");
-    }
+        
+        
     
 }
 
 void movecheck(){
     
     printf("輸入移動的X座標與Y座標\n");
-    scanf("%d%d",&fromx,&fromy);
+    scanf("%c",&firstinput);
+    if(firstinput=='0'){
+        current=current->prev;
+        plate[current->iy][current->ix]=plate[current->oy][current->ox];
+        plate[current->oy][current->ox]=current->chessori;
+        free(current->next);
+        current->next=NULL;
+        if(count%2==0 && saveminor[saveminloc]==current->chessori){
+            saveminor[saveminloc]=' ';
+            saveminloc--;
+        }
+        else if(count%2==1 && savemajor[savemajloc]==current->chessori){
+            savemajor[savemajloc]=' ';
+            savemajloc--;
+        }
+        count--;
+        return;
+    }
+    else if(firstinput=='s' || firstinput=='S'){
+        current=start;
+        rewind(file);
+        for(int i=0; i<count; i++){
+            printf("bad\n");
+            fprintf(file,"%d%d%d%d%c%c\n",current->ix,current->iy,current->ox,current->oy,current->chessori,current->chessalt);
+            current=current->next;
+        }
+        fflush(file);
+        return;
+    }
+    else{
+        scanf("%d",&fromy);
+    }
+
+    fromx=firstinput-'0';
     inputx=9-fromx;
     inputy=fromy-1;
+
+    if(count%2==0){
+        if(plate[inputy][inputx]<='A' || plate[inputy][inputx]>='Z'){
+            printf("a\n");
+            cannotmove();
+            return;
+        }
+    }
+    else{
+        if(plate[inputy][inputx]<='a' || plate[inputy][inputx]>='z'){
+            printf("x=%d\n",fromx);
+            cannotmove();
+            return;
+        }
+    }
+
+
     if(plate[inputy][inputx]==' '){
         printf("這裡是空的\n");
     }
@@ -211,44 +325,38 @@ void movecheck(){
 int xiang(){
    
     if(count%2==0){
-        if(inputx==outputx && inputy>outputy && plate[outputy][outputx]==' '){
+        if(inputx==outputx && inputy>outputy){
            int k=0;
-           for(int i=inputy-1; i>=outputy; i--){
+           for(int i=inputy-1; i>outputy; i--){
                 if(plate[i][outputx]!=' '){
                     k++;
                 }
             }
-            if(k==0){
+            if(k==0 && eat(plate[outputy][outputx])){
                 canmove();
             }
             else{
                 cannotmove();
             }
         }
-        else if(plate[outputy][outputx]>='a' && plate[outputy][outputx]<='z'){
-
-        }   
         else{
             cannotmove();
         }
     }
     else{
-        if(inputx==outputx && inputy<outputy && plate[outputy][outputx]==' '){
+        if(inputx==outputx && inputy<outputy){
             int k=0;
-            for(int i=inputy+1; i<=outputy; i++){
+            for(int i=inputy+1; i<outputy; i++){
                 if(plate[i][outputx]!=' '){
                     k++;
                 }
             }
-            if(k==0){
+            if(k==0 && eat(plate[outputy][outputx])){
                 canmove();
             }
             else{
                 cannotmove();
             }
-        }
-        else if(plate[outputy][outputx]>='A' && plate[outputy][outputx]<='Z'){
-
         }
         else{
             cannotmove();
@@ -259,12 +367,8 @@ int xiang(){
 int guei(){
     
     if(count%2==0){
-        if((inputx-1==outputx || inputx+1==outputx) && inputy-2==outputy && plate[outputy][outputx]==' '){
+        if((inputx-1==outputx || inputx+1==outputx) && inputy-2==outputy && eat(plate[outputy][outputx])){
             canmove();
-        }
-        else if(plate[outputy][outputx]>='a' && plate[outputy][outputx]<='z'){
-
-
         }
         else{
             cannotmove();
@@ -272,13 +376,9 @@ int guei(){
         
     }
     else{
-        if((inputx-1==outputx || inputx+1==outputx) && inputy+2==outputy && plate[outputy][outputx]==' '){
+        if((inputx-1==outputx || inputx+1==outputx) && inputy+2==outputy && eat(plate[outputy][outputx])){
             canmove();
 
-        }
-        else if(plate[outputy][outputx]>='A' && plate[outputy][outputx]<='Z'){
-
-            
         }
         else{
             cannotmove();
@@ -294,7 +394,12 @@ int yin(){
                 cannotmove();
             }
             else{
-                canmove();
+                if(eat(plate[outputy][outputx])){
+                    canmove();
+                }
+                else{
+                    cannotmove();
+                }
             }
         }
         else{
@@ -302,7 +407,12 @@ int yin(){
                 cannotmove();
             }
             else{
-                canmove();
+                if(eat(plate[outputy][outputx])){
+                    canmove();
+                }
+                else{
+                    cannotmove();
+                }
             }
         }
     }
@@ -318,7 +428,13 @@ int jin(){
                 cannotmove();
             }
             else{
-                canmove();
+                if(eat(plate[outputy][outputx])){
+                    canmove();
+                }
+                else{
+                    cannotmove();
+                }
+
             }
         }
         else{
@@ -326,7 +442,12 @@ int jin(){
                 cannotmove();
             }
             else{
-                canmove();
+                if(eat(plate[outputy][outputx])){
+                    canmove();
+                }
+                else{
+                    cannotmove();
+                }
             }
         }
     }
@@ -337,14 +458,8 @@ int jin(){
 
 int wang(){
     if(abs(inputx-outputx)<2 && abs(inputy-outputy)<2){
-        if(plate[outputy][outputx]==' '){
+        if(eat(plate[outputy][outputx])){
             canmove();
-        }
-        else if(count%2==0 && plate[outputy][outputx]>='a' && plate[outputy][outputx]<='z'){
-         
-        }
-        else if(count%2!=0 && plate[outputy][outputx]>='A' && plate[outputy][outputx]<='Z'){
-        
         }
         else{
             cannotmove();
@@ -356,13 +471,12 @@ int wang(){
 }
 
 int fei(){
-    if((inputx==outputx || inputy==outputy) && plate[outputy][outputx]==' '){
+    if((inputx==outputx || inputy==outputy)){
         int k=0;
         if(inputx==outputx && inputy>outputy){
             for(int i=inputy-1; i>outputy; i--){
                 if(plate[i][outputx]!=' '){
                     k++;
-                    printf("%d\n",k);
                 }
             }
         }
@@ -370,8 +484,6 @@ int fei(){
             for(int i=inputy+1; i<outputy; i++){
                 if(plate[i][outputx]!=' '){
                     k++;
-                                        printf("%d\n",k);
-
                 }
             }
         }
@@ -379,8 +491,6 @@ int fei(){
             for(int i=inputx+1; i<outputx; i++){
                 if(plate[outputy][i]!=' '){
                     k++;
-                                        printf("%d\n",k);
-
                 }
             }
         }
@@ -388,24 +498,16 @@ int fei(){
             for(int i=inputx-1; i>outputx; i--){
                 if(plate[outputy][i]!=' '){
                     k++;
-                                        printf("%d\n",k);
-
                 }
             }
         }
 
-        if(k==0){
+        if(k==0 && eat(plate[outputy][outputx])){
             canmove();
         }
         else{
             cannotmove();
         }
-    }
-    else if(count%2==0 && plate[outputy][outputx]>='a' && plate[outputy][outputx]<='z' && (inputx==outputx || inputy==outputy)){
-         
-    }
-    else if(count%2!=0 && plate[outputy][outputx]>='A' && plate[outputy][outputx]<='Z' && (inputx==outputx || inputy==outputy)){
-        
     }
     else{
         cannotmove();
@@ -418,46 +520,40 @@ int jiao(){
     if(abs(inputx-outputx)==abs(inputy-outputy) ){
         int k=0;
         if(inputx-outputx>0 && inputy-outputy>0){
-            for(int i=inputx-1, j=inputy-1; i>=outputx, j>=outputy ; i--, j--){
+            for(int i=inputx-1, j=inputy-1; i>outputx, j>outputy ; i--, j--){
                 if(plate[j][i]!=' '){
                     k++;
                 }
             }
         }
         else if(inputx-outputx>0 && inputy-outputy<0){
-            for(int i=inputx-1, j=inputy+1 ; i>=outputx, j<=outputy ; i--, j++){
+            for(int i=inputx-1, j=inputy+1 ; i>outputx, j<outputy ; i--, j++){
                 if(plate[j][i]!=' '){
                     k++;
                 }
             }
         }
         else if(inputx-outputx<0 && inputy-outputy>0){
-            for(int i=inputx+1, j=inputy-1 ; i<=outputx, j>=outputy ; i++, j--){
+            for(int i=inputx+1, j=inputy-1 ; i<outputx, j>outputy ; i++, j--){
                 if(plate[j][i]!=' '){
                     k++;
                 }
             }
         }
         else{
-            for(int i=inputx+1, j=inputy+1 ; i<=outputx, j<=outputy ; i++, j++){
+            for(int i=inputx+1, j=inputy+1 ; i<outputx, j<outputy ; i++, j++){
                 if(plate[j][i]!=' '){
                     k++;
                 }
             }
         }
         
-        if(k==0){
+        if(k==0 && eat(plate[outputy][outputx])){
             canmove();
         }
         else{
             cannotmove();
         }
-    }
-    else if(count%2==0 && plate[outputy][outputx]>='a' && plate[outputy][outputx]<='z'){
-         
-    }
-    else if(count%2!=0 && plate[outputy][outputx]>='A' && plate[outputy][outputx]<='Z'){
-        
     }
     else{
         cannotmove();
@@ -468,26 +564,20 @@ int jiao(){
 int bu(){
     
     if(count%2==0){
-        if(inputx==outputx && inputy-1==outputy && plate[outputy][outputx]==' '){
-            canmove();
+        if(inputx==outputx && inputy-1==outputy){
+            if(eat(plate[outputy][outputx]))
+                canmove();
             
-        }
-        else if(plate[outputy][outputx]>='a' && plate[outputy][outputx]<='z'){
-
-
         }
         else{
             cannotmove();
         }
     }
     else{
-        if(inputx==outputx && inputy+1==outputy && plate[outputy][outputx]==' '){
-            canmove();
+        if(inputx==outputx && inputy+1==outputy){
+            if(eat(plate[outputy][outputx]))
+                canmove();
 
-        }
-        else if(plate[outputy][outputx]>='A' && plate[outputy][outputx]<='Z'){
-
-            
         }
         else{
             cannotmove();
@@ -495,10 +585,36 @@ int bu(){
     }  
 }
 
-int canmove(){
+void canmove(){
+
+    if(count%2==0 && plate[outputy][outputx]!=' '){
+        saveminor[saveminloc]=plate[outputy][outputx];
+        saveminloc++;
+    }
+    else if(count%2==1 && plate[outputy][outputx]!=' '){
+        savemajor[savemajloc]=plate[outputy][outputx];
+        savemajloc++;
+    }
+    current->ix=inputx;
+    current->iy=inputy;
+    current->ox=outputx;
+    current->oy=outputy;
+    current->chessalt=plate[inputy][inputx];
+    current->chessori=plate[outputy][outputx];
+    cunptr nb=(cunptr)malloc(sizeof(cun));
+    current->next=nb;
+    nb->prev=current;
+    nb->next=NULL;
+    current=nb;
+
     plate[outputy][outputx]=plate[inputy][inputx];
     plate[inputy][inputx]=' ';
     count++;
+
+    // if(saveminor[--saveminloc]=='w' || savemajor[--savemajloc]=='W'){
+
+    // }
+    
 }
 
 void cannotmove(){
@@ -508,5 +624,48 @@ void cannotmove(){
 
 void printColour(int color, char* str){
 //    printf("\033[%dm%s\033[m",color, str);
-   printf("\033[38:5:%dm%s",color,str);
+   printf("\033[38:5:%dm%s\033[0m",color,str);
+}
+
+int eat(char p){
+    if(count%2==0){
+        switch (p)
+        {
+        case 'x':
+        case 'g':
+        case 'y':
+        case 'k':
+        case 'w':
+        case 'j':
+        case 'f':
+        case 'b':
+        case ' ':
+            return 1;
+            break;
+        
+        default:
+            return 0;
+            break;
+        }
+    }
+    else{
+        switch(p){
+            case 'X':
+            case 'G':
+            case 'Y':
+            case 'K':
+            case 'W':
+            case 'J':
+            case 'F':
+            case 'B':
+            case ' ':
+                return 1;
+                break;
+
+            default:
+                return 0;
+                break;
+        }
+    }
+   
 }
