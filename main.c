@@ -79,6 +79,18 @@ int main(int argc, char **argv){
         }
     }
     while(1){
+        
+        if(saveminor[saveminloc-1]=='w' || savemajor[savemajloc-1]=='W'){
+        printf("遊戲結束◎ ▽ ◎\n");
+        current=start;
+        rewind(file);
+        for(int i=0; i<count; i++){
+            fprintf(file,"%d%d%d%d%c%c\n",current->ix,current->iy,current->ox,current->oy,current->chessori,current->chessalt);
+            current=current->next;
+        }
+        fflush(file);
+        return 0 ;
+    }
         system("clear");
         for(int i=0; i<savemajloc; i++){
             print(savemajor[i]);
@@ -235,18 +247,23 @@ void movecheck(){
     printf("輸入移動的X座標與Y座標\n");
     scanf("%c",&firstinput);
     if(firstinput=='0'){
+        if(count==0){
+            printf("悔到底了\n");
+            sleep(1);
+            return;
+        }
         current=current->prev;
         plate[current->iy][current->ix]=plate[current->oy][current->ox];
         plate[current->oy][current->ox]=current->chessori;
         free(current->next);
         current->next=NULL;
-        if(count%2==0 && saveminor[saveminloc]==current->chessori){
-            saveminor[saveminloc]=' ';
+        if(count%2==1 && saveminor[saveminloc-1]==current->chessori){
             saveminloc--;
+            saveminor[saveminloc]=' ';
         }
-        else if(count%2==1 && savemajor[savemajloc]==current->chessori){
-            savemajor[savemajloc]=' ';
+        else if(count%2==0 && savemajor[savemajloc-1]==current->chessori){
             savemajloc--;
+            savemajor[savemajloc]=' ';
         }
         count--;
         return;
@@ -610,11 +627,6 @@ void canmove(){
     plate[outputy][outputx]=plate[inputy][inputx];
     plate[inputy][inputx]=' ';
     count++;
-
-    // if(saveminor[--saveminloc]=='w' || savemajor[--savemajloc]=='W'){
-
-    // }
-    
 }
 
 void cannotmove(){
