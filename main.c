@@ -12,6 +12,8 @@ int tox, toy;
 int inputx, inputy, outputx, outputy;
 char firstinput;
 int count=0;
+int dudangyongcount=0;
+int end=0;
 char plate[ROW][COL];
 char saveminor[500], savemajor[500];
 int saveminloc=0, savemajloc=0;
@@ -34,6 +36,7 @@ extern char *optarg;
 extern int optind, opterr, optopt;
 FILE *file;
 int z;
+int status;
 struct node{
     int ix, iy, ox, oy;
     char chessori, chessalt;
@@ -56,12 +59,13 @@ int main(int argc, char **argv){
     while((z=getopt(argc, argv, "ns:l:"))!=-1){
         switch(z){
             case 'n':
-                
+                status=1;
                 break;
 
             case 's':
+                status=1;
                 file=fopen(optarg,"w+");
-                if( file==NULL){
+                if(file==NULL){
                     printf("File cannot be opened!\n");
                     return 0;
                 }
@@ -69,28 +73,39 @@ int main(int argc, char **argv){
                 break;
 
             case 'l':
+                status=2;
                 file=fopen(optarg,"r+");
                 if(file==NULL){
                     printf("File cannot be opened!");
                     return 0;
                 }
-                
+                while(!feof(file)){
+                    fscanf(file,"%d %d %d %d %c%c\n",&current->ix,&current->iy,&current->ox,&current->oy,&current->chessori,&current->chessalt);
+                    cunptr nb=(cunptr)malloc(sizeof(cun));
+                    current->next=nb;
+                    nb->prev=current;
+                    nb->next=NULL;
+                    current=nb;
+                    count++;
+                }
+                current=start;
+
                 break;
         }
     }
-    while(1){
+    while(status==1 && end==0){
         
         if(saveminor[saveminloc-1]=='w' || savemajor[savemajloc-1]=='W'){
-        printf("遊戲結束◎ ▽ ◎\n");
-        current=start;
-        rewind(file);
-        for(int i=0; i<count; i++){
-            fprintf(file,"%d%d%d%d%c%c\n",current->ix,current->iy,current->ox,current->oy,current->chessori,current->chessalt);
-            current=current->next;
+            printf("遊戲結束◎ ▽ ◎\n");
+            current=start;
+            rewind(file);
+            for(int i=0; i<count; i++){
+                fprintf(file,"%d %d %d %d %c%c\n",current->ix,current->iy,current->ox,current->oy,current->chessori,current->chessalt);
+                current=current->next;
+            }
+            fflush(file);
+            return 0 ;
         }
-        fflush(file);
-        return 0 ;
-    }
         system("clear");
         for(int i=0; i<savemajloc; i++){
             print(savemajor[i]);
@@ -113,7 +128,70 @@ int main(int argc, char **argv){
         getchar();
 
     }
-        
+    while(status==2){
+        system("clear");
+        for(int i=0; i<savemajloc; i++){
+            print(savemajor[i]);
+        }
+        printf("\n");
+
+        printf("９８７６５４３２１\n");
+        for(int i=0 ; i<ROW ; i++ ){
+            for( int j=0 ; j<COL ; j++){
+                print(plate[i][j]);
+            }
+            printf("%d",i+1);
+            printf("\n");
+        }
+        for(int i=0; i<=saveminloc; i++){
+            print(saveminor[i]);
+        }
+        printf("\n");
+        scanf("%c",&firstinput);
+        // printf("count = %d, dudangyongcount = %d\n",count,dudangyongcount);
+        // sleep(1);
+        outputx=current->ox;
+        outputy=current->oy;
+        inputx=current->ix;
+        inputy=current->iy;
+        if((firstinput=='f'||firstinput=='F') && dudangyongcount<count){
+            if(dudangyongcount%2==0 && plate[outputy][outputx]!='.'){
+                saveminor[saveminloc]=plate[outputy][outputx];
+                saveminloc++;
+            }
+            else if(dudangyongcount%2==1 && plate[outputy][outputx]!='.'){
+                savemajor[savemajloc]=plate[outputy][outputx];
+                savemajloc++;
+            }
+
+            plate[outputy][outputx]=plate[inputy][inputx];
+            plate[inputy][inputx]='.';
+            current=current->next;
+            dudangyongcount++;
+        }
+        else if((firstinput=='b'||firstinput=='B')&& dudangyongcount>0){
+            current=current->prev;
+            plate[current->iy][current->ix]=plate[current->oy][current->ox];
+            plate[current->oy][current->ox]=current->chessori;
+            if(dudangyongcount%2==1 && saveminor[saveminloc-1]==current->chessori){
+                saveminloc--;
+                saveminor[saveminloc]='.';
+            }
+            else if(dudangyongcount%2==0 && savemajor[savemajloc-1]==current->chessori){
+                savemajloc--;
+                savemajor[savemajloc]='.';
+            }
+            dudangyongcount--;
+        }
+        else if((firstinput=='b'||firstinput=='B') && dudangyongcount==0){
+            printf("cant tui le!\n");
+            sleep(1);
+        }
+        else if((firstinput=='f'||firstinput=='F') && dudangyongcount>=count){
+            printf("duo le!\n");
+            sleep(1);
+        }
+    }  
     
     return 0;
 }
@@ -172,7 +250,7 @@ void ini(){
                 plate[i][j]='B';
             }
             else{
-                plate[i][j]=' ';
+                plate[i][j]='.';
             }
 
         }
@@ -231,9 +309,12 @@ void print(char chess){
             case'B':
                 printColour(YELLO,"步");
                 break;
-            default:
-                printf("  ");
+            case '.':
+                printf("　");
                 break;
+            // default:
+            //     printf("  ");
+            //     break;
             }
             
 
@@ -259,11 +340,11 @@ void movecheck(){
         current->next=NULL;
         if(count%2==1 && saveminor[saveminloc-1]==current->chessori){
             saveminloc--;
-            saveminor[saveminloc]=' ';
+            saveminor[saveminloc]='.';
         }
         else if(count%2==0 && savemajor[savemajloc-1]==current->chessori){
             savemajloc--;
-            savemajor[savemajloc]=' ';
+            savemajor[savemajloc]='.';
         }
         count--;
         return;
@@ -272,12 +353,23 @@ void movecheck(){
         current=start;
         rewind(file);
         for(int i=0; i<count; i++){
-            printf("bad\n");
-            fprintf(file,"%d%d%d%d%c%c\n",current->ix,current->iy,current->ox,current->oy,current->chessori,current->chessalt);
+            fprintf(file,"%d %d %d %d %c%c\n",current->ix,current->iy,current->ox,current->oy,current->chessori,current->chessalt);
             current=current->next;
         }
         fflush(file);
         return;
+    }
+    else if(firstinput=='/'){
+        printf("退出遊戲\n");
+        current=start;
+            rewind(file);
+            for(int i=0; i<count; i++){
+                fprintf(file,"%d %d %d %d %c%c\n",current->ix,current->iy,current->ox,current->oy,current->chessori,current->chessalt);
+                current=current->next;
+            }
+            fflush(file);
+            end=1;
+            return;
     }
     else{
         scanf("%d",&fromy);
@@ -303,7 +395,7 @@ void movecheck(){
     }
 
 
-    if(plate[inputy][inputx]==' '){
+    if(plate[inputy][inputx]=='.'){
         printf("這裡是空的\n");
     }
     else{
@@ -345,7 +437,7 @@ int xiang(){
         if(inputx==outputx && inputy>outputy){
            int k=0;
            for(int i=inputy-1; i>outputy; i--){
-                if(plate[i][outputx]!=' '){
+                if(plate[i][outputx]!='.'){
                     k++;
                 }
             }
@@ -364,7 +456,7 @@ int xiang(){
         if(inputx==outputx && inputy<outputy){
             int k=0;
             for(int i=inputy+1; i<outputy; i++){
-                if(plate[i][outputx]!=' '){
+                if(plate[i][outputx]!='.'){
                     k++;
                 }
             }
@@ -492,28 +584,28 @@ int fei(){
         int k=0;
         if(inputx==outputx && inputy>outputy){
             for(int i=inputy-1; i>outputy; i--){
-                if(plate[i][outputx]!=' '){
+                if(plate[i][outputx]!='.'){
                     k++;
                 }
             }
         }
         else if(inputx==outputx && inputy<outputy){
             for(int i=inputy+1; i<outputy; i++){
-                if(plate[i][outputx]!=' '){
+                if(plate[i][outputx]!='.'){
                     k++;
                 }
             }
         }
         else if(inputx<outputx && inputy==outputy){
             for(int i=inputx+1; i<outputx; i++){
-                if(plate[outputy][i]!=' '){
+                if(plate[outputy][i]!='.'){
                     k++;
                 }
             }
         }
         else if(inputx>outputx && inputy==outputy){
             for(int i=inputx-1; i>outputx; i--){
-                if(plate[outputy][i]!=' '){
+                if(plate[outputy][i]!='.'){
                     k++;
                 }
             }
@@ -538,28 +630,28 @@ int jiao(){
         int k=0;
         if(inputx-outputx>0 && inputy-outputy>0){
             for(int i=inputx-1, j=inputy-1; i>outputx, j>outputy ; i--, j--){
-                if(plate[j][i]!=' '){
+                if(plate[j][i]!='.'){
                     k++;
                 }
             }
         }
         else if(inputx-outputx>0 && inputy-outputy<0){
             for(int i=inputx-1, j=inputy+1 ; i>outputx, j<outputy ; i--, j++){
-                if(plate[j][i]!=' '){
+                if(plate[j][i]!='.'){
                     k++;
                 }
             }
         }
         else if(inputx-outputx<0 && inputy-outputy>0){
             for(int i=inputx+1, j=inputy-1 ; i<outputx, j>outputy ; i++, j--){
-                if(plate[j][i]!=' '){
+                if(plate[j][i]!='.'){
                     k++;
                 }
             }
         }
         else{
             for(int i=inputx+1, j=inputy+1 ; i<outputx, j<outputy ; i++, j++){
-                if(plate[j][i]!=' '){
+                if(plate[j][i]!='.'){
                     k++;
                 }
             }
@@ -604,11 +696,11 @@ int bu(){
 
 void canmove(){
 
-    if(count%2==0 && plate[outputy][outputx]!=' '){
+    if(count%2==0 && plate[outputy][outputx]!='.'){
         saveminor[saveminloc]=plate[outputy][outputx];
         saveminloc++;
     }
-    else if(count%2==1 && plate[outputy][outputx]!=' '){
+    else if(count%2==1 && plate[outputy][outputx]!='.'){
         savemajor[savemajloc]=plate[outputy][outputx];
         savemajloc++;
     }
@@ -625,7 +717,7 @@ void canmove(){
     current=nb;
 
     plate[outputy][outputx]=plate[inputy][inputx];
-    plate[inputy][inputx]=' ';
+    plate[inputy][inputx]='.';
     count++;
 }
 
@@ -651,7 +743,7 @@ int eat(char p){
         case 'j':
         case 'f':
         case 'b':
-        case ' ':
+        case '.':
             return 1;
             break;
         
@@ -670,7 +762,7 @@ int eat(char p){
             case 'J':
             case 'F':
             case 'B':
-            case ' ':
+            case '.':
                 return 1;
                 break;
 
