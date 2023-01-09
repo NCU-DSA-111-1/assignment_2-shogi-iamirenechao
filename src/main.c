@@ -1,53 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <math.h>
-#define ROW 9
-#define COL 9
-#define BLUE 81
-#define YELLO 218
-
-int fromx, fromy;
-int tox, toy;
-int inputx, inputy, outputx, outputy;
-char firstinput;
-int count=0;
-int dudangyongcount=0;
-int end=0;
-char plate[ROW][COL];
-char saveminor[500], savemajor[500];
-int saveminloc=0, savemajloc=0;
-void ini();
-void print(char chess);
-void movecheck();
-int xiang();
-int guei();
-int yin();
-int jin();
-int wang();
-int fei();
-int jiao();
-int bu();
-void canmove();
-void cannotmove();
-void printColour(int color, char* str);
-int eat(char p);
-extern char *optarg;
-extern int optind, opterr, optopt;
-FILE *file;
-int z;
-int status;
-struct node{
-    int ix, iy, ox, oy;
-    char chessori, chessalt;
-    struct node* next;
-    struct node* prev;
-};
-
-typedef struct node cun;
-typedef struct node* cunptr;
-cunptr current;
-cunptr start;
+#include "../inc/main.h"
 
 int main(int argc, char **argv){
     ini();
@@ -147,6 +98,7 @@ int main(int argc, char **argv){
             print(saveminor[i]);
         }
         printf("\n");
+        printf("輸入f/F查看下一步\n輸入b/B查看上一步\n");
         scanf("%c",&firstinput);
         // printf("count = %d, dudangyongcount = %d\n",count,dudangyongcount);
         // sleep(1);
@@ -184,11 +136,11 @@ int main(int argc, char **argv){
             dudangyongcount--;
         }
         else if((firstinput=='b'||firstinput=='B') && dudangyongcount==0){
-            printf("cant tui le!\n");
+            printf("已經到開始的狀態了\n");
             sleep(1);
         }
         else if((firstinput=='f'||firstinput=='F') && dudangyongcount>=count){
-            printf("duo le!\n");
+            printf("已經是最後一步了\n");
             sleep(1);
         }
     }  
