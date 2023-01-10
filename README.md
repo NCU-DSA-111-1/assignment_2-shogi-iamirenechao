@@ -1,7 +1,7 @@
 # Shogi  
 
 ## Display  
-    From the start of the game, we can see that colour pink represents player 1's chess, and colour blue represents player 2's chess. We start the game from player 1.
+From the start of the game, we can see that colour pink represents player 1's chess, and colour blue represents player 2's chess. We start the game from player 1.
 
 ## Rules
 ### During the game
