@@ -79,7 +79,7 @@ int main(int argc, char **argv){
         getchar();
 
     }
-    while(status==2){
+    while(status==2 ){
         system("clear");
         for(int i=0; i<savemajloc; i++){
             print(savemajor[i]);
